@@ -5,6 +5,8 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 PADDLE_START_X = 10
 PADDLE_START_Y = 20
+PADDLE2_START_X =790
+PADDLE2_START_Y = 20
 PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 100
 BALL_SPEED = 10
@@ -14,6 +16,13 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Pong")
 
+
+try:
+	sound = pygame.mixer.Sound("ding.wav")
+except pygame.error, message:
+	print "Cannot load sound: " + "ding.wav"
+	raise SystemExit, message
+
 # This is a rect that contains the ball at the beginning it is set in the center of the screen
 ball_rect = pygame.Rect((SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2), (BALL_WIDTH_HEIGHT, BALL_WIDTH_HEIGHT))
 
@@ -22,6 +31,7 @@ ball_speed = [BALL_SPEED, BALL_SPEED]
 
 # Your paddle vertically centered on the left side
 paddle_rect = pygame.Rect((PADDLE_START_X, PADDLE_START_Y), (PADDLE_WIDTH, PADDLE_HEIGHT))
+paddle2_rect = pygame.Rect((PADDLE2_START_X, PADDLE2_START_Y), (PADDLE_WIDTH, PADDLE_HEIGHT))
 
 # Scoring: 1 point if you hit the ball, -5 point if you miss the ball
 p1score = 0
@@ -54,7 +64,11 @@ while True:
 	elif pygame.key.get_pressed()[pygame.K_ESCAPE]:
 		sys.exit(0)
 		pygame.quit()
-		
+	if pygame.key.get_pressed()[pygame.K_w] and paddle2_rect.top > 0:
+		paddle2_rect.top -= BALL_SPEED
+	elif pygame.key.get_pressed()[pygame.K_s] and paddle2_rect.bottom < SCREEN_HEIGHT:
+		paddle2_rect.top += BALL_SPEED
+
 	# Update ball position
 	ball_rect.left += ball_speed[0]
 	ball_rect.top += ball_speed[1]
@@ -68,6 +82,10 @@ while True:
 	# Test if the ball is hit by the paddle; if yes reverse speed and add a point
 	if paddle_rect.colliderect(ball_rect):
 		ball_speed[0] = -ball_speed[0]
+		sound.play()
+	if paddle2_rect.colliderect(ball_rect):
+		ball_speed[0] = -ball_speed[0]
+		sound.play()	
 	if ball_rect.left <= 0:
 		p2score +=1 
 	if ball_rect.right >= SCREEN_WIDTH:
@@ -77,6 +95,7 @@ while True:
 
 	# Render the ball, the paddle, and the score
 	pygame.draw.rect(screen, (0, 0, 0), paddle_rect) # Your paddle
+	pygame.draw.rect(screen, (0, 0, 0), paddle2_rect) 
 	pygame.draw.circle(screen, (0, 0, 0), ball_rect.center, ball_rect.width / 2) # The ball
 	p1score_text = font.render(str(p1score), True, (0, 0, 0))
 	screen.blit(p1score_text, ((SCREEN_WIDTH / 4) - font.size(str(p1score))[0] / 2, 5)) # The score
